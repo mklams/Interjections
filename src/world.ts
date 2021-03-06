@@ -57,6 +57,10 @@ export default class World{
         }
     }
 
+    public DrawText(){
+        
+    }
+
     public takeRandomFreePoint() {
         const freeCellPos = this.getRandomFreeCell();
         const posKey = this.freeCells.splice(freeCellPos, 1)[0];

@@ -1,6 +1,7 @@
-import { Display, DIRS } from "../rotjs/index";
-import { Actor, MoveActor, ASCIIDrawable } from "./actor";
-import { BackgroundColor, GameState, InterjectionSymbol, TeleporterSymbol } from "./game";
+import { DIRS } from "../rotjs/index";
+import { Actor, ASCIIDrawable } from "./actor";
+import { GameState, InterjectionSymbol, TeleporterSymbol } from "./game";
+import { InputHandler } from "./InputHandler";
 import Point from "./point";
 import World from "./world";
 
@@ -21,19 +22,13 @@ export default class Player implements Actor, ASCIIDrawable {
         this.world.DrawCharAtPoint(this.symbol, this.position, this.symbolColor);
     }
 
-    keyEventResolve: (value:any) => void;
-    keyEventHandler: (event: KeyboardEvent) => boolean;
-
     act(): Promise<any>{
-        return new Promise(resolve => {
-            this.keyEventResolve = resolve;
-            this.keyEventHandler = this.handleInput.bind(this);
-            window.addEventListener("keydown", this.keyEventHandler);
-        })
+        const handleUserInput = new InputHandler();
+        return handleUserInput.setupHandler(this.handleKeyboardEvent.bind(this));
     }
 
     // TODO: Move input handling to its own class
-    private handleInput(event: KeyboardEvent): boolean {
+    handleKeyboardEvent(event: KeyboardEvent): any {
         var keyMap = {};
         keyMap[38] = 0;
         keyMap[33] = 1;
@@ -48,18 +43,15 @@ export default class Player implements Actor, ASCIIDrawable {
         var code = event.keyCode;
         
         if(code == 13 || code == 32){
-            window.removeEventListener("keydown", this.keyEventHandler);
-            this.keyEventResolve(this.checkSpace());
-            return;
+            return this.checkSpace();
         }
 
-        if (!(code in keyMap)) { return; }
+        if (!(code in keyMap)) { return null; }
         var diff = DIRS[8][keyMap[code]];
         let newPoint = new Point(this.position.x + diff[0],this.position.y + diff[1]);
         this.movePlayer(newPoint);
-        
-        window.removeEventListener("keydown", this.keyEventHandler);
-        this.keyEventResolve(GameState.Running);
+
+        return GameState.Running;
     }
 
     private movePlayer(newPosition: Point){

@@ -1,4 +1,3 @@
-import { Display } from "../rotjs/index";
 import Point from "./point";
 
 export interface Actor{

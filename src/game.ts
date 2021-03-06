@@ -32,7 +32,7 @@ export class Game {
     async gameLoop(scheduler: SimpleScheduler){
         let gameState = GameState.Running
         while(gameState != GameState.GameOver){
-            let actor = scheduler.next();
+            let actor: Actor = scheduler.next();
             if(!actor) {break}
             gameState = await actor.act();
             if(gameState == GameState.NewLevel){
@@ -48,7 +48,12 @@ export class Game {
     }
 
     constructor() {
-        this.display = new Display({width: 40, height:40 });
+        this.display = new Display({width: 50, height:50 });
+        this.display.setOptions({
+            fontSize: 15,
+            fontStyle: "bold",
+            bg: "#a00"
+        });
         document.body.appendChild(this.display.getContainer());
 
         const turnscheduler: SimpleScheduler = this.createNewWorld();
@@ -90,10 +95,6 @@ export class Game {
     private isPointFree(x:string,y:string){
         const point = new Point(parseInt(x),parseInt(y));
         return this.world.IsPointFree(point);
-    }
-
-    private drawMap(){
-        this.createWorld();
     }
 
     private generateMap() {
