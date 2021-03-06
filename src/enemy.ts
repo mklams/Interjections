@@ -1,15 +1,18 @@
 import { Display } from "../rotjs/index";
 import AStar from "../rotjs/path/astar";
 import { Actor, ASCIIDrawable, MoveActor } from "./actor";
-import { BackgroundColor } from "./game";
+import { BackgroundColor, Game, GameState } from "./game";
 import Point from "./point";
 import point from "./point";
+import World from "./world";
 
 export class Twelvetoes implements Actor, ASCIIDrawable{
     symbol = "W";
-    symbolColor ="red";
+    symbolColor ="blue";
 
-    constructor(private position: point, private moveTwelvetoes: MoveActor, private getPathToPlayer: () => AStar){};
+    constructor(private world: World, private position: point, private getPathToPlayer: () => AStar){
+        this.drawEnemy();
+    };
 
     act(): Promise<any> {
         const pathToPlayer = this.getPathToPlayer();
@@ -20,25 +23,33 @@ export class Twelvetoes implements Actor, ASCIIDrawable{
         pathToPlayer.compute(this.position.x, this.position.y, pathCallback);
         path.shift(); // remove current postion
         if(path.length === 1){
-            console.log("Twelvetoes found you");
-            return Promise.resolve(false);
+            return Promise.resolve(GameState.GameOver);
         }
         else{
             const newPosition = new Point(path[0][0],path[0][1]);
-            this.moveTwelvetoes(this, newPosition);
+            this.moveEnemy(newPosition);
         }
-        return Promise.resolve(true);
+        return Promise.resolve(GameState.Running);
     }
 
-    draw(display: Display): void {
-        display.draw(this.position.x, this.position.y, this.symbol, this.symbolColor, BackgroundColor);
+    private drawEnemy(): void {
+        this.world.DrawCharAtPoint(this.symbol, this.position, this.symbolColor);
     }
 
-    setPosition(position: point): void {
+    private setPosition(position: point): void {
         this.position = position;
     }
 
     getPosition(): point {
         return this.position;
+    }
+
+    private moveEnemy(newPosition: Point){
+        if (!this.world.IsPointFree(newPosition)) { return false; } /* cannot move in this direction */
+        const oldPosition = this.getPosition();
+        this.world.DrawPoint(oldPosition);
+        this.setPosition(newPosition);
+        this.drawEnemy();
+        return true;
     }
 }
