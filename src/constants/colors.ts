@@ -1,0 +1,1 @@
+export const MonitorGreen = "#5DFC0A"; // green LED

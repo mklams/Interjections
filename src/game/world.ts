@@ -1,5 +1,5 @@
-import { Display, RNG } from "../rotjs/index";
-import Digger from "../rotjs/map/digger";
+import { Display, RNG } from "../../rotjs/index";
+import Digger from "../../rotjs/map/digger";
 import { TileColor, BackgroundColor } from "./game";
 import Point from "./point";
 
@@ -16,15 +16,18 @@ export default class World{
     private createWorld(digger: Digger){
         var digCallback = function(x, y, value) {
             if (value) { return; } /* do not store walls */
-     
-            const key = x+","+y;
-            this.freeCells.push(key);
-            this.map[key] = ".";
+            this.MakePointEmpty(new Point(x,y));
         }
         digger.create(digCallback.bind(this));
     }
 
-    public IsPointFree(point: Point){
+    public MakePointEmpty(point: Point){
+        const key = point.toKey();
+        this.freeCells.push(key);
+        this.map[key] = ".";
+    }
+
+    public IsPointInWorld(point: Point){
         return (point.toKey() in this.map);
     }
 
@@ -58,7 +61,7 @@ export default class World{
     }
 
     public DrawText(){
-        
+
     }
 
     public takeRandomFreePoint() {

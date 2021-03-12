@@ -1,7 +1,7 @@
-import { DIRS } from "../rotjs/index";
+import { DIRS } from "../../rotjs/index";
 import { Actor, ASCIIDrawable } from "./actor";
-import { GameState, InterjectionSymbol, TeleporterSymbol } from "./game";
-import { InputHandler } from "./InputHandler";
+import { GameStatus, QuestionSymbol, TeleporterSymbol } from "./game";
+import { InputHandler } from "./inputHandler";
 import Point from "./point";
 import World from "./world";
 
@@ -9,8 +9,7 @@ export default class Player implements Actor, ASCIIDrawable {
     symbol = "V";
     symbolColor = "red";
 
-    // TODO: Player shouldn't be getting passed winning position
-    constructor(private world:World, private position: Point, private winningPos: Point){
+    constructor(private world:World, private position: Point){
         this.drawPlayer();
     }
 
@@ -27,7 +26,6 @@ export default class Player implements Actor, ASCIIDrawable {
         return handleUserInput.setupHandler(this.handleKeyboardEvent.bind(this));
     }
 
-    // TODO: Move input handling to its own class
     handleKeyboardEvent(event: KeyboardEvent): any {
         var keyMap = {};
         keyMap[38] = 0;
@@ -41,21 +39,25 @@ export default class Player implements Actor, ASCIIDrawable {
      
         //var code = event.code;
         var code = event.keyCode;
+
+        let gameState = null;
         
         if(code == 13 || code == 32){
             return this.checkSpace();
         }
 
-        if (!(code in keyMap)) { return null; }
-        var diff = DIRS[8][keyMap[code]];
-        let newPoint = new Point(this.position.x + diff[0],this.position.y + diff[1]);
-        this.movePlayer(newPoint);
-
-        return GameState.Running;
+        if (code in keyMap) {  
+            var diff = DIRS[8][keyMap[code]];
+            let newPoint = new Point(this.position.x + diff[0],this.position.y + diff[1]);
+            const playerMoved = this.movePlayer(newPoint);
+            if(playerMoved) { gameState = GameStatus.Running; }
+        }
+        
+        return gameState;
     }
 
     private movePlayer(newPosition: Point){
-        if (!this.world.IsPointFree(newPosition)) { return false; } /* cannot move in this direction */
+        if (!this.world.IsPointInWorld(newPosition)) { return false; } /* cannot move in this direction */
         const oldPosition = this.getPosition();
         this.world.DrawPoint(oldPosition);
         this.position = newPosition;
@@ -66,21 +68,14 @@ export default class Player implements Actor, ASCIIDrawable {
     private checkSpace(){
         const pos = this.getPosition();
         
-        if(this.world.IsCharAtPoint(InterjectionSymbol, pos)){
-            alert("HEY! Find the Teleporter!");
-            return GameState.Running;
+        if(this.world.IsCharAtPoint(QuestionSymbol, pos)){
+            return GameStatus.AskQuestion;
         }
         else if(this.world.IsCharAtPoint(TeleporterSymbol,pos)){
-            alert("HEY! Time to move on!");
-            return GameState.NewLevel;
-        }
-        else if(pos.equals(this.winningPos)){
-            alert("HEY! YOU WON!");
-            return GameState.GameOver;
+            return GameStatus.NewLevel;
         }
         else{
-            alert("AWWW! Nothing here...");
-            return GameState.Running;
+            return null;
         }
     }
 }
