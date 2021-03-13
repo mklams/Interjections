@@ -23,7 +23,7 @@ export const TileColor = MonitorGreen;
 export const SETTINGS = {
     NumberOfInterjections: 4,
     NumberOfTeleporters: 3,
-    PointsToWin: 10
+    PointsToWin: 8
 }
 
 export const DEBUGMODE = false;
@@ -80,7 +80,7 @@ export class Game {
             }
 
             if(gameState == GameStatus.AskQuestion){
-                const question = new Question(this.outputHandler);
+                const question = new Question(this.outputHandler, this.level);
                 gameState = await question.ask();
             }
 

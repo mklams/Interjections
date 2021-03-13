@@ -4,8 +4,22 @@ import { InputHandler } from "./inputHandler";
 import { MultipleChoiceQuestion, QuestionBank } from "../constants/multipleChoiceQuestions";
 
 
-const getRandomQuestion = () => {
-    return QuestionBank[Math.floor(Math.random() * QuestionBank.length)];
+const getRandomQuestion = (questionBank:any[]) => {
+    return questionBank[Math.floor(Math.random() * questionBank.length)];
+}
+
+const getRandomQuestionForLevel = (level?: number) => {
+    const questionsForLevel = getQuestionsWithLevel(level || -1);
+    if(questionsForLevel.length > 0){
+        return getRandomQuestion(questionsForLevel);
+    } 
+    return getRandomQuestion(QuestionBank);
+}
+
+const getQuestionsWithLevel = (level:number) => {
+    return QuestionBank.filter((multipleChoiceQuestion) => {
+        return multipleChoiceQuestion.Level === level;
+    });
 }
 
 const addOptionToString = (outputMessage: string, option: string, optionIndex: number) => {
@@ -27,8 +41,8 @@ const getInputCodes = (options:any[]) => options.map((_,index) => `${(index+1)}`
 export class Question{
     private question: MultipleChoiceQuestion;
     
-    constructor(private outputHandler: OutputHandler){
-        this.question = getRandomQuestion();
+    constructor(private outputHandler: OutputHandler, gameLevel?: number){
+        this.question = getRandomQuestionForLevel(gameLevel);
     }
 
     ask(): Promise<any> {
@@ -47,8 +61,8 @@ export class Question{
         if(getInputCodes(this.question.Options).includes(code)){
 
             if(answerInputCode.includes(code)){
-                const responseToAnswer = this.question.Response ?? "That's what happening!";
-                this.outputHandler.showMessage(responseToAnswer)
+                this.outputHandler.showMessage("YES! That's what's happening!")
+                if(this.question.Response){ this.outputHandler.showMessage(this.question.Response) }
                 return GameStatus.AnswerCorrect
             }
             return GameStatus.AnswerWrong;
