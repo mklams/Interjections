@@ -2,9 +2,8 @@ import React, {useState, useEffect} from "react";
 import { render } from "react-dom";
 import { Game } from "../game/game";
 import { Terminal } from "./terminal";
-import styled from 'styled-components';
 import "../styles/main.scss";
-import { Scoreboard } from "./Scoreboard";
+import { Scoreboard } from "./scoreboard";
 
 const App = () => {
     const [messages, setMessages] = useState([]);
